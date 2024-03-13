@@ -110,9 +110,3 @@ fi
 
 # docker run --rm -v $(pwd)/tests:/tests:ro cr.loongnix.cn/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA} /tests/run_tests.sh
 
-if [ "${MANYLINUX_BUILD_FRONTEND}" != "docker" ]; then
-	if [ -d $(pwd)/.buildx-cache-${POLICY}_${PLATFORM} ]; then
-		rm -rf $(pwd)/.buildx-cache-${POLICY}_${PLATFORM}
-	fi
-	mv $(pwd)/.buildx-cache-staging-${POLICY}_${PLATFORM} $(pwd)/.buildx-cache-${POLICY}_${PLATFORM}
-fi
