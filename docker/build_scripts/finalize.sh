@@ -8,7 +8,7 @@ MY_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 # Get build utilities
 source $MY_DIR/build_utils.sh
-
+yum install -y cmake
 mkdir /opt/python
 for PREFIX in $(find /opt/_internal/ -mindepth 1 -maxdepth 1 \( -name 'cpython*' -o -name 'pypy*' \)); do
 	${MY_DIR}/finalize-one.sh ${PREFIX}

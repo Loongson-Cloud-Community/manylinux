@@ -34,6 +34,8 @@ fixup-mirrors
 
 # do we want to update locales ?
 if [ "${BASE_POLICY}" == "manylinux" ]; then
+	yum -y install glibc-locale-source glibc-all-langpacks
+	localedef -i zh_CN -f UTF-8 zh_CN.UTF-8
 	LOCALE_ARCHIVE=/usr/lib/locale/locale-archive
 	TIMESTAMP_FILE=${LOCALE_ARCHIVE}.ml.timestamp
 	if [ ! -f ${TIMESTAMP_FILE} ] || [ ${LOCALE_ARCHIVE} -nt ${TIMESTAMP_FILE} ]; then

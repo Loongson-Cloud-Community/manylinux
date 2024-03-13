@@ -22,6 +22,8 @@ elif [ "${PLATFORM}" == "ppc64le" ]; then
 	MULTIARCH_PREFIX="ppc64le/"
 elif [ "${PLATFORM}" == "s390x" ]; then
 	MULTIARCH_PREFIX="s390x/"
+elif [ "${PLATFORM}" == "loongarch64" ]; then
+        MULTIARCH_PREFIX="loong64/"
 else
 	echo "Unsupported platform: '${PLATFORM}'"
 	exit 1
@@ -31,6 +33,8 @@ fi
 if [ "${POLICY}" == "manylinux2014" ]; then
 	if [ "${PLATFORM}" == "s390x" ]; then
 		BASEIMAGE="s390x/clefos:7"
+	elif [ "${PLATFORM}" == "loongarch64" ]; then
+                BASEIMAGE="cr.loongnix.cn/openanolis/anolisos:8.9"
 	else
 		BASEIMAGE="${MULTIARCH_PREFIX}centos:7"
 	fi
@@ -68,7 +72,7 @@ export LD_LIBRARY_PATH_ARG
 BUILD_ARGS_COMMON="
 	--build-arg POLICY --build-arg PLATFORM --build-arg BASEIMAGE
 	--build-arg DEVTOOLSET_ROOTPATH --build-arg PREPEND_PATH --build-arg LD_LIBRARY_PATH_ARG
-	--rm -t quay.io/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}
+	--rm -t cr.loongnix.cn/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}
 	-f docker/Dockerfile docker/
 "
 
@@ -84,11 +88,11 @@ fi
 if [ "${MANYLINUX_BUILD_FRONTEND}" == "docker" ]; then
 	docker build ${BUILD_ARGS_COMMON}
 elif [ "${MANYLINUX_BUILD_FRONTEND}" == "docker-buildx" ]; then
-	docker buildx build \
-		--load \
-		--cache-from=type=local,src=$(pwd)/.buildx-cache-${POLICY}_${PLATFORM} \
-		--cache-to=type=local,dest=$(pwd)/.buildx-cache-staging-${POLICY}_${PLATFORM} \
-		${BUILD_ARGS_COMMON}
+	docker buildx build ${BUILD_ARGS_COMMON}
+#		--load \
+#		--cache-from=type=local,src=$(pwd)/.buildx-cache-${POLICY}_${PLATFORM} \
+#		--cache-to=type=local,dest=$(pwd)/.buildx-cache-staging-${POLICY}_${PLATFORM} \
+#		${BUILD_ARGS_COMMON}
 elif [ "${MANYLINUX_BUILD_FRONTEND}" == "buildkit" ]; then
 	buildctl build \
 		--frontend=dockerfile.v0 \
@@ -104,7 +108,7 @@ else
 	exit 1
 fi
 
-docker run --rm -v $(pwd)/tests:/tests:ro quay.io/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA} /tests/run_tests.sh
+docker run --rm -v $(pwd)/tests:/tests:ro cr.loongnix.cn/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA} /tests/run_tests.sh
 
 if [ "${MANYLINUX_BUILD_FRONTEND}" != "docker" ]; then
 	if [ -d $(pwd)/.buildx-cache-${POLICY}_${PLATFORM} ]; then
