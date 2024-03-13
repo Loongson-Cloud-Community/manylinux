@@ -45,7 +45,7 @@ fi
 
 # RUNTIME_DEPS: Runtime dependencies. c.f. install-build-packages.sh
 if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
-	RUNTIME_DEPS="zlib bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libidn libcurl uuid libffi libdb"
+	RUNTIME_DEPS="bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libidn libcurl uuid libffi libdb"
     if [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
         RUNTIME_DEPS="${RUNTIME_DEPS} tk"
     fi
@@ -72,7 +72,7 @@ if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
 	echo "exclude = d36uatko69830t.cloudfront.net" >> /etc/yum/pluginconf.d/fastestmirror.conf
 	yum -y update
 	yum -y install yum-utils curl
-	yum-config-manager --enable extras
+#	yum-config-manager --enable extras
 	TOOLCHAIN_DEPS="devtoolset-10-binutils devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-gcc-gfortran"
 	if [ "${AUDITWHEEL_ARCH}" == "x86_64" ]; then
 		# Software collection (for devtoolset-10)
@@ -87,6 +87,8 @@ if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
 		# No yasm on i686
 		# Install mayeut/devtoolset-10 repo to get devtoolset-10
 		curl -fsSLo /etc/yum.repos.d/mayeut-devtoolset-10.repo https://copr.fedorainfracloud.org/coprs/mayeut/devtoolset-10/repo/custom-1/mayeut-devtoolset-10-custom-1.repo
+	elif [ "${AUDITWHEEL_ARCH}" == "loongarch64" ]; then
+		TOOLCHAIN_DEPS="binutils gcc gcc-c++ gcc-gfortran"
 	fi
 elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 	PACKAGE_MANAGER=apt

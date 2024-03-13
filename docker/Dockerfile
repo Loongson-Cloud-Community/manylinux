@@ -104,7 +104,8 @@ RUN export TCL_ROOT=tcl8.6.13 && \
     manylinux-entrypoint /build_scripts/build-tcltk.sh
 
 COPY build_scripts/build-cpython.sh /build_scripts/
-
+COPY build_scripts/config.guess /build_scripts/config.guess
+COPY build_scripts/config.sub /build_scripts/config.sub
 
 FROM build_cpython AS build_cpython36
 COPY build_scripts/cpython-pubkeys.txt /build_scripts/cpython-pubkeys.txt

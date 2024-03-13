@@ -8,6 +8,10 @@ MY_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 # Get build utilities
 source $MY_DIR/build_utils.sh
+# 安装cmake 以及 编译patchelf 替代pip安装这两个工具，目前这两个工具安装失败
+yum install -y ninja-build cmake gcc gcc-c++ wget
+wget https://nixos.org/releases/patchelf/patchelf-0.9/patchelf-0.9.tar.gz
+tar xf patchelf-0.9.tar.gz && cd patchelf-0.9 && ./configure && make && make install
 
 mkdir /opt/python
 for PREFIX in $(find /opt/_internal/ -mindepth 1 -maxdepth 1 \( -name 'cpython*' -o -name 'pypy*' \)); do
