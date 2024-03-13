@@ -88,11 +88,11 @@ fi
 if [ "${MANYLINUX_BUILD_FRONTEND}" == "docker" ]; then
 	docker build ${BUILD_ARGS_COMMON}
 elif [ "${MANYLINUX_BUILD_FRONTEND}" == "docker-buildx" ]; then
-	docker buildx build \
+	docker buildx build ${BUILD_ARGS_COMMON}
 #		--load \
 #		--cache-from=type=local,src=$(pwd)/.buildx-cache-${POLICY}_${PLATFORM} \
 #		--cache-to=type=local,dest=$(pwd)/.buildx-cache-staging-${POLICY}_${PLATFORM}\
-		${BUILD_ARGS_COMMON}
+#		${BUILD_ARGS_COMMON}
 elif [ "${MANYLINUX_BUILD_FRONTEND}" == "buildkit" ]; then
 	buildctl build \
 		--frontend=dockerfile.v0 \
@@ -108,7 +108,7 @@ else
 	exit 1
 fi
 
-docker run --rm -v $(pwd)/tests:/tests:ro quay.io/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA} /tests/run_tests.sh
+docker run --rm -v $(pwd)/tests:/tests:ro cr.loongnix.cn/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA} /tests/run_tests.sh
 
 if [ "${MANYLINUX_BUILD_FRONTEND}" != "docker" ]; then
 	if [ -d $(pwd)/.buildx-cache-${POLICY}_${PLATFORM} ]; then
