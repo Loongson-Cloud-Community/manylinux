@@ -1,0 +1,25 @@
+diff --git a/configure.ac b/configure.ac
+index 384718d..e2916f7 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -991,6 +991,20 @@ cat > conftest.c <<EOF
+ #  else
+ #   error unknown platform triplet
+ #  endif
++# elif defined(__loongarch__)
++#  if defined(__loongarch_lp64)
++#   if defined(__loongarch_soft_float)
++        loongarch64-linux-gnusf
++#   elif defined(__loongarch_single_float)
++        loongarch64-linux-gnuf32
++#   elif defined(__loongarch_double_float)
++        loongarch64-linux-gnu
++#   else
++#    error unknown platform triplet
++#   endif
++#  else
++#   error unknown platform triplet
++#  endif
+ # elif defined(__m68k__) && !defined(__mcoldfire__)
+         m68k-linux-gnu
+ # elif defined(__mips_hard_float) && defined(__mips_isa_rev) && (__mips_isa_rev >=6) && defined(_MIPSEL)
