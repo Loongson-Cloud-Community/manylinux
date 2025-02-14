@@ -15,7 +15,7 @@ source "${MY_DIR}/build_utils.sh"
 CERT_IDENTITY=$1
 CERT_OIDC_ISSUER=$2
 CPYTHON_VERSION=$3
-CPYTHON_DOWNLOAD_URL=https://www.python.org/ftp/python
+CPYTHON_DOWNLOAD_URL=http://cloud.loongnix.cn/releases/loongarch64/python/
 
 
 function pyver_dist_dir {
@@ -43,6 +43,18 @@ PREFIX="/opt/_internal/cpython-${CPYTHON_VERSION}"
 mkdir -p "${PREFIX}/lib"
 CFLAGS_EXTRA=""
 CONFIGURE_ARGS=(--disable-shared --with-ensurepip=no)
+
+if [ "${AUDITWHEEL_ARCH}" == "loongarch64" ]; then
+	case $CPYTHON_VERSION in
+		3.6.*|3.7.*|3.8.*)
+			rm -f config.sub config.guess
+			# fetch_source "config.sub" "https://git.savannah.gnu.org/cgit/config.git/plain"
+			# fetch_source "config.guess" "https://git.savannah.gnu.org/cgit/config.git/plain"
+			curl -fsSL -o config.sub 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
+			curl -fsSL -o config.guess 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
+			;;
+	esac
+fi
 
 if [ "${4:-}" == "nogil" ]; then
 	PREFIX="${PREFIX}-nogil"

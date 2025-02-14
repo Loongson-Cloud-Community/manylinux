@@ -49,7 +49,7 @@ if [ "${OS_ID_LIKE}" == "rhel" ]; then
 	RUNTIME_DEPS=(zlib bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libcurl uuid libffi libdb)
 	if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
 		RUNTIME_DEPS+=(libidn libXft)
-	elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+	elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_27" ] ; then
 		RUNTIME_DEPS+=(libidn tk)
 	else
 		RUNTIME_DEPS+=(libidn2 tk)
@@ -119,13 +119,15 @@ elif [ "${OS_ID_LIKE}" == "rhel" ]; then
 	BASE_TOOLS+=(glibc-locale-source glibc-langpack-en hardlink hostname libcurl libnsl libxcrypt which)
 	echo "tsflags=nodocs" >> /etc/dnf/dnf.conf
 	dnf -y upgrade
-	dnf -y install dnf-plugins-core epel-release
-	if [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
-		dnf config-manager --set-enabled powertools
-	else
-		dnf config-manager --set-enabled crb
-	fi
-	TOOLCHAIN_DEPS=(gcc-toolset-14-binutils gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran)
+#	dnf -y install dnf-plugins-core epel-release
+	dnf -y install dnf-plugins-core
+#	if [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+#		dnf config-manager --set-enabled powertools
+#	else
+#		dnf config-manager --set-enabled crb
+#	fi
+	TOOLCHAIN_DEPS=(binutils gcc gcc-c++ gcc-gfortran)
+#	TOOLCHAIN_DEPS=(gcc-toolset-14-binutils gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran)
 	if [ "${AUDITWHEEL_ARCH}" == "x86_64" ]; then
 		TOOLCHAIN_DEPS+=(yasm)
 	fi

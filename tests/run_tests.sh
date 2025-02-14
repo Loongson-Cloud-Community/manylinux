@@ -97,7 +97,7 @@ for PYTHON in /opt/python/*/bin/python; do
 		echo "invalid answer, expecting 42"
 		exit 1
 	fi
-	if [ "${PYVERS}" != "3.6" ] && [ "${PYVERS}" != "3.7" ] && [ "${IMPLEMENTATION}" != "graalpy" ] && [ "${AUDITWHEEL_POLICY:0:9}_${AUDITWHEEL_ARCH}" != "musllinux_ppc64le" ] && [ "${AUDITWHEEL_POLICY:0:9}_${AUDITWHEEL_ARCH}" != "musllinux_s390x" ] && [ "${AUDITWHEEL_ARCH}" != "riscv64" ]; then
+	if [ "${PYVERS}" != "3.6" ] && [ "${PYVERS}" != "3.7" ] && [ "${IMPLEMENTATION}" != "graalpy" ] && [ "${AUDITWHEEL_POLICY:0:9}_${AUDITWHEEL_ARCH}" != "musllinux_ppc64le" ] && [ "${AUDITWHEEL_POLICY:0:9}_${AUDITWHEEL_ARCH}" != "musllinux_s390x" ] && [ "${AUDITWHEEL_ARCH}" != "riscv64" ] && [ "${AUDITWHEEL_ARCH}" != "loongarch64" ]; then
 		# no uv on musllinux ppc64le / s390x
 		UV_PYTHON=/tmp/uv-test-${IMPLEMENTATION}${PYVERS}/bin/python
 		uv venv --python "${PYTHON}" "/tmp/uv-test-${IMPLEMENTATION}${PYVERS}"
@@ -129,7 +129,7 @@ pipx install --pip-args='--no-input' nox
 nox --version
 tar --version | grep "GNU tar"
 # we stopped installing sqlite3 after manylinux_2_28 / musllinux_1_2
-if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ] || [ "${AUDITWHEEL_POLICY}" == "musllinux_1_2" ]; then
+if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_27" ] || [ "${AUDITWHEEL_POLICY}" == "musllinux_1_2" ]; then
 	sqlite3 --version
 fi
 
@@ -142,7 +142,7 @@ if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
 	eval "$(ssh-agent -k)"
 fi
 
-if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ] || [ "${AUDITWHEEL_POLICY}" == "musllinux_1_2" ]; then
+if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_27" ] || [ "${AUDITWHEEL_POLICY}" == "musllinux_1_2" ]; then
 	# sqlite compilation tests, intended to ensure appropriate headers, pkg_config, etc.
 	# are available for downstream compile against installed tools
 	source_dir="${MY_DIR}/ctest"

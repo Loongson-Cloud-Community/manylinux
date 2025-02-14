@@ -34,7 +34,7 @@ The manylinux project supports:
 
 - ``manylinux2014`` images for ``x86_64``, ``i686``, ``aarch64``, ``ppc64le`` and ``s390x``.
 
-- ``manylinux_2_28`` images for ``x86_64``, ``aarch64``, ``ppc64le`` and ``s390x``.
+- ``manylinux_2_28`` images for ``x86_64``, ``aarch64``, ``ppc64le``, ``s390x`` and ``loongarch64``.
 
 - ``manylinux_2_34`` images for ``x86_64``, ``aarch64``, ``ppc64le`` and ``s390x``.
 
@@ -160,6 +160,7 @@ Toolchain: GCC 14
 - aarch64 image: ``quay.io/pypa/manylinux_2_28_aarch64``
 - ppc64le image: ``quay.io/pypa/manylinux_2_28_ppc64le``
 - s390x image: ``quay.io/pypa/manylinux_2_28_s390x``
+- loongarch64 image: ``cr.loongnix.cn/pypa/manylinux_2_28_loongarch_loongnix`` ``cr.loongnix.cn/pypa/manylinux_2_28_loongarch_anolis``
 
 Built wheels are also expected to be compatible with other
 distros using glibc 2.28 or later, including:
@@ -168,7 +169,8 @@ distros using glibc 2.28 or later, including:
 - Ubuntu 18.10+
 - Fedora 29+
 - CentOS/RHEL 8+
-
+- Loongnix 20
+- AnolisOS 8.9
 
 manylinux2014 (CentOS 7 based, glibc 2.17)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

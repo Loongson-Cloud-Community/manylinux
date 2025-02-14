@@ -30,8 +30,10 @@ fi
 # shellcheck source=/dev/null
 OS_ID_LIKE=$(. /etc/os-release; echo "${ID} ${ID_LIKE:-}")
 case "${OS_ID_LIKE}" in
+	*anolis*) OS_ID_LIKE=rhel;;
 	*rhel*) OS_ID_LIKE=rhel;;
 	*debian) OS_ID_LIKE=debian;;
+	*Loongnix*) OS_ID_LIKE=debian;;
 	*alpine*) OS_ID_LIKE=alpine;;
 	*) echo "unsupported image"; exit 1;;
 esac

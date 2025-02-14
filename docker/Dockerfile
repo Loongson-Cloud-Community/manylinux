@@ -160,6 +160,8 @@ COPY --from=build_mpdecimal /manylinux-rootfs /
 COPY --from=build_sqlite3 /manylinux-rootfs /
 COPY --from=build_git /manylinux-rootfs /
 COPY build_scripts /opt/_internal/build_scripts/
+RUN mkdir ~/.pip
+COPY pip.conf ~/.pip/
 RUN --mount=type=bind,target=/build_cpython36,from=build_cpython36 \
     --mount=type=bind,target=/build_cpython37,from=build_cpython37 \
     --mount=type=bind,target=/build_cpython38,from=build_cpython38 \

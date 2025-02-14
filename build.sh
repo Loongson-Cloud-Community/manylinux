@@ -20,6 +20,7 @@ case "${PLATFORM}" in
 	s390x) GOARCH="s390x";;
 	armv7l) GOARCH="arm/v7";;
 	riscv64) GOARCH="riscv64";;
+	loongarch64) GOARCH="loong64";;
 	*) echo "Unsupported platform: '${PLATFORM}'"; exit 1;;
 esac
 
@@ -33,8 +34,13 @@ if [ "${POLICY}" == "manylinux2014" ]; then
 	else
 		LD_LIBRARY_PATH_ARG="${DEVTOOLSET_ROOTPATH}/usr/lib64:${DEVTOOLSET_ROOTPATH}/usr/lib:${DEVTOOLSET_ROOTPATH}/usr/lib64/dyninst:${DEVTOOLSET_ROOTPATH}/usr/lib/dyninst:/usr/local/lib64"
 	fi
+elif [ "${POLICY}" == "manylinux_2_27" ]; then
+        BASEIMAGE="cr.loongnix.cn/openanolis/anolisos:8.9"
+        DEVTOOLSET_ROOTPATH="/opt/rh/gcc-toolset-14/root"
+        PREPEND_PATH="${DEVTOOLSET_ROOTPATH}/usr/bin:"
+        LD_LIBRARY_PATH_ARG="${DEVTOOLSET_ROOTPATH}/usr/lib64:${DEVTOOLSET_ROOTPATH}/usr/lib:${DEVTOOLSET_ROOTPATH}/usr/lib64/dyninst:${DEVTOOLSET_ROOTPATH}/usr/lib/dyninst"
 elif [ "${POLICY}" == "manylinux_2_28" ]; then
-	BASEIMAGE="almalinux:8"
+	BASEIMAGE="cr.loongnix.cn/openanolis/anolisos:8.9"
 	DEVTOOLSET_ROOTPATH="/opt/rh/gcc-toolset-14/root"
 	PREPEND_PATH="${DEVTOOLSET_ROOTPATH}/usr/bin:"
 	LD_LIBRARY_PATH_ARG="${DEVTOOLSET_ROOTPATH}/usr/lib64:${DEVTOOLSET_ROOTPATH}/usr/lib:${DEVTOOLSET_ROOTPATH}/usr/lib64/dyninst:${DEVTOOLSET_ROOTPATH}/usr/lib/dyninst"
@@ -54,7 +60,7 @@ elif [ "${POLICY}" == "manylinux_2_35" ]; then
 	PREPEND_PATH=
 	LD_LIBRARY_PATH_ARG=
 elif [ "${POLICY}" == "musllinux_1_2" ]; then
-	BASEIMAGE="alpine:3.21"
+	BASEIMAGE="cr.loongnix.cn/library/alpine:3.11"
 	DEVTOOLSET_ROOTPATH=
 	PREPEND_PATH=
 	LD_LIBRARY_PATH_ARG=
@@ -68,10 +74,10 @@ export PREPEND_PATH
 export LD_LIBRARY_PATH_ARG
 
 BUILD_ARGS_COMMON=(
-	"--platform=linux/${GOARCH}"
+#	"--platform=linux/${GOARCH}"
 	--build-arg POLICY --build-arg PLATFORM --build-arg BASEIMAGE
 	--build-arg DEVTOOLSET_ROOTPATH --build-arg PREPEND_PATH --build-arg LD_LIBRARY_PATH_ARG
-	--rm -t "quay.io/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}"
+	--rm -t "cr.loongnix.cn/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}"
 	-f docker/Dockerfile docker/
 )
 
@@ -91,17 +97,17 @@ elif [ "${MANYLINUX_BUILD_FRONTEND}" == "podman" ]; then
 	podman build "${BUILD_ARGS_COMMON[@]}"
 elif [ "${MANYLINUX_BUILD_FRONTEND}" == "docker-buildx" ]; then
 	USE_LOCAL_CACHE=1
-	docker buildx build \
-		--load \
-		"--cache-from=type=local,src=$(pwd)/.buildx-cache-${POLICY}_${PLATFORM}" \
-		"--cache-to=type=local,dest=$(pwd)/.buildx-cache-staging-${POLICY}_${PLATFORM},mode=max" \
-		"${BUILD_ARGS_COMMON[@]}"
+	docker build "${BUILD_ARGS_COMMON[@]}"
+#		--load \
+#		"--cache-from=type=local,src=$(pwd)/.buildx-cache-${POLICY}_${PLATFORM}" \
+#		"--cache-to=type=local,dest=$(pwd)/.buildx-cache-staging-${POLICY}_${PLATFORM},mode=max" \
+#		"${BUILD_ARGS_COMMON[@]}"
 else
 	echo "Unsupported build frontend: '${MANYLINUX_BUILD_FRONTEND}'"
 	exit 1
 fi
 
-docker run --rm -v "$(pwd)/tests:/tests:ro" "quay.io/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}" /tests/run_tests.sh
+docker run --rm -v "$(pwd)/tests:/tests:ro" "cr.loongnix.cn/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}" /tests/run_tests.sh
 
 if [ ${USE_LOCAL_CACHE} -ne 0 ]; then
 	if [ -d "$(pwd)/.buildx-cache-${POLICY}_${PLATFORM}" ]; then
