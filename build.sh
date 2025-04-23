@@ -24,6 +24,8 @@ elif [ "${PLATFORM}" == "s390x" ]; then
 	GOARCH="s390x"
 elif [ "${PLATFORM}" == "armv7l" ]; then
 	GOARCH="arm/v7"
+elif [ "${PLATFORM}" == "loongarch64" ]; then
+	GOARCH="loong64"
 else
 	echo "Unsupported platform: '${PLATFORM}'"
 	exit 1
@@ -40,11 +42,20 @@ if [ "${POLICY}" == "manylinux2014" ]; then
 		LD_LIBRARY_PATH_ARG="${DEVTOOLSET_ROOTPATH}/usr/lib64:${DEVTOOLSET_ROOTPATH}/usr/lib:${DEVTOOLSET_ROOTPATH}/usr/lib64/dyninst:${DEVTOOLSET_ROOTPATH}/usr/lib/dyninst:/usr/local/lib64"
 	fi
 elif [ "${POLICY}" == "manylinux_2_28" ]; then
-	BASEIMAGE="almalinux:8"
+    if [ "${PLATFORM}" == "loongarch64" ]; then
+        BASEIMAGE="cr.loongnix.cn/openanolis/anolisos:8.9"
+    else
+        BASEIMAGE="almalinux:8"
+    fi
 	DEVTOOLSET_ROOTPATH="/opt/rh/gcc-toolset-14/root"
 	PREPEND_PATH="${DEVTOOLSET_ROOTPATH}/usr/bin:"
 	LD_LIBRARY_PATH_ARG="${DEVTOOLSET_ROOTPATH}/usr/lib64:${DEVTOOLSET_ROOTPATH}/usr/lib:${DEVTOOLSET_ROOTPATH}/usr/lib64/dyninst:${DEVTOOLSET_ROOTPATH}/usr/lib/dyninst"
 elif [ "${POLICY}" == "manylinux_2_34" ]; then
+	BASEIMAGE="almalinux:9"
+	DEVTOOLSET_ROOTPATH="/opt/rh/gcc-toolset-14/root"
+	PREPEND_PATH="/usr/local/bin:${DEVTOOLSET_ROOTPATH}/usr/bin:"
+	LD_LIBRARY_PATH_ARG="${DEVTOOLSET_ROOTPATH}/usr/lib64:${DEVTOOLSET_ROOTPATH}/usr/lib:${DEVTOOLSET_ROOTPATH}/usr/lib64/dyninst:${DEVTOOLSET_ROOTPATH}/usr/lib/dyninst"
+elif [ "${POLICY}" == "manylinux_2_38" ]; then
 	BASEIMAGE="almalinux:9"
 	DEVTOOLSET_ROOTPATH="/opt/rh/gcc-toolset-14/root"
 	PREPEND_PATH="/usr/local/bin:${DEVTOOLSET_ROOTPATH}/usr/bin:"
@@ -54,6 +65,10 @@ elif [ "${POLICY}" == "musllinux_1_2" ]; then
 	DEVTOOLSET_ROOTPATH=
 	PREPEND_PATH=
 	LD_LIBRARY_PATH_ARG=
+elif [ "${POLICY}" == "linux" ]; then
+	if [ "${PLATFORM}" == "loongarch64" ]; then
+		BASEIMAGE="cr.loongnix.cn/openanolis/anolisos:8.9"
+	fi
 else
 	echo "Unsupported policy: '${POLICY}'"
 	exit 1
@@ -67,7 +82,7 @@ BUILD_ARGS_COMMON="
 	--platform=linux/${GOARCH}
 	--build-arg POLICY --build-arg PLATFORM --build-arg BASEIMAGE
 	--build-arg DEVTOOLSET_ROOTPATH --build-arg PREPEND_PATH --build-arg LD_LIBRARY_PATH_ARG
-	--rm -t quay.io/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}
+	--rm -t cr.loongnix.cn/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}
 	-f docker/Dockerfile docker/
 "
 
@@ -80,24 +95,31 @@ if [ "${CI:-}" == "true" ]; then
 	fi
 fi
 
+if [ "${PLATFORM}" == "loongarch64" ]; then
+	BUILD_ARGS_COMMON="--add-host=cloud.loongnix.cn:${CLOUD_HOST} ${BUILD_ARGS_COMMON}"
+    BUILD_ARGS_COMMON="--build-arg https_proxy=${https_proxy} ${BUILD_ARGS_COMMON}"
+fi
+
 USE_LOCAL_CACHE=0
 if [ "${MANYLINUX_BUILD_FRONTEND}" == "docker" ]; then
 	docker build ${BUILD_ARGS_COMMON}
 elif [ "${MANYLINUX_BUILD_FRONTEND}" == "podman" ]; then
 	podman build ${BUILD_ARGS_COMMON}
 elif [ "${MANYLINUX_BUILD_FRONTEND}" == "docker-buildx" ]; then
-	USE_LOCAL_CACHE=1
+	if [ "${PLATFORM}" != "loongarch64" ]; then
+		USE_LOCAL_CACHE=1
+	fi
 	docker buildx build \
-		--load \
-		--cache-from=type=local,src=$(pwd)/.buildx-cache-${POLICY}_${PLATFORM} \
-		--cache-to=type=local,dest=$(pwd)/.buildx-cache-staging-${POLICY}_${PLATFORM},mode=max \
-		${BUILD_ARGS_COMMON}
+		--load --pull=false ${BUILD_ARGS_COMMON}
+	#	--load \
+	#	--cache-from=type=local,src=$(pwd)/.buildx-cache-${POLICY}_${PLATFORM} \
+	#	--cache-to=type=local,dest=$(pwd)/.buildx-cache-staging-${POLICY}_${PLATFORM},mode=max \
 else
 	echo "Unsupported build frontend: '${MANYLINUX_BUILD_FRONTEND}'"
 	exit 1
 fi
 
-docker run --rm -v $(pwd)/tests:/tests:ro quay.io/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA} /tests/run_tests.sh
+docker run --rm -v $(pwd)/tests:/tests:ro cr.loongnix.cn/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA} /tests/run_tests.sh
 
 if [ ${USE_LOCAL_CACHE} -ne 0 ]; then
 	if [ -d $(pwd)/.buildx-cache-${POLICY}_${PLATFORM} ]; then

@@ -27,8 +27,10 @@ fi
 
 OS_ID_LIKE=$(. /etc/os-release; echo "${ID} ${ID_LIKE:-}")
 case "${OS_ID_LIKE}" in
-	*rhel*) OS_ID_LIKE=rhel;;
 	*alpine*) OS_ID_LIKE=alpine;;
+	*openEuler*) OS_ID_LIKE=openEuler;;
+	*opencloudos*) OS_ID_LIKE=opencloudos;;
+    *anolis*) OS_ID_LIKE=openAnolisos;;
 	*) echo "unsupported image"; exit 1;;
 esac
 
@@ -50,7 +52,7 @@ function fetch_source {
 	if [ -f ${file} ]; then
 		echo "${file} exists, skipping fetch"
 	else
-		curl -fsSL -o ${file} ${url}/${file}
+		curl -fsSL --retry 3 -o ${file} ${url}/${file}
 	fi
 }
 

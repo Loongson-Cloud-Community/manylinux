@@ -1,0 +1,2 @@
+#!/bin/bash
+CLOUD_HOST=10.130.0.141 POLICY=manylinux_2_28 PLATFORM=loongarch64 COMMIT_SHA=latest  ./build.sh

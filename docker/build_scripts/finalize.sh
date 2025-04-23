@@ -82,9 +82,18 @@ pipx upgrade-shared --pip-args="--no-index --find-links=/tmp/pinned-wheels"
 # install other tools with pipx
 for TOOL_PATH in $(find ${MY_DIR}/requirements-tools -type f); do
 	TOOL=$(basename ${TOOL_PATH})
+
+    # === 专门处理 auditwheel on loongarch64 ===
+    if [[ "${TOOL}" == "auditwheel" && "${AUDITWHEEL_PLAT}-${TOOL}" == *_loongarch64* ]]; then
+        pipx install https://pypi.loongnix.cn/loongson/pypi/+f/93d/cef562de586d8/auditwheel-6.1.0-py3-none-any.whl#sha256=93dcef562de586d866bddc80d41ccac424cddbdd8ab1b70f6f1b4f08d3ae2c3f
+        continue
+    fi
+
 	case ${AUDITWHEEL_PLAT}-${TOOL} in
 		musllinux*_ppc64le-uv) continue;;  # uv doesn't provide musl ppc64le wheels due to Rust issues
 		musllinux*_s390x-uv) continue;;  # uv doesn't provide musl s390x wheels due to Rust issues
+		#musllinux*_loongarch64-uv) pipx install --pip-args="--index-url https://pypi.loongnix.cn/loongson/pypi" ${TOOL}==0.5.9;;
+		*_loongarch64*) pipx install --pip-args="--index-url https://pypi.loongnix.cn/loongson/pypi" ${TOOL};;
 		*) pipx install --pip-args="--require-hashes -r ${TOOL_PATH} --only-binary" ${TOOL};;
 	esac
 done

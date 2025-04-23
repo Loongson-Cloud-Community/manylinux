@@ -2,7 +2,7 @@
 
 import sys
 
-GOOD_SSL = "https://google.com"
+GOOD_SSL = "https://cn.bing.com"
 BAD_SSL = "https://self-signed.badssl.com"
 
 print("Testing SSL certificate checking for Python:", sys.version)

@@ -1,0 +1,2 @@
+#!/bin/bash
+POLICY=musllinux_1_2 PLATFORM=loongarch64 COMMIT_SHA=latest  ./build.sh

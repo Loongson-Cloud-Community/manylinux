@@ -34,6 +34,8 @@ source $MY_DIR/build_utils.sh
 # MANYLINUX_DEPS: Install development packages (except for libgcc which is provided by gcc install)
 if [ "${OS_ID_LIKE}" == "rhel" ]; then
 	MANYLINUX_DEPS="glibc-devel libstdc++-devel glib2-devel libX11-devel libXext-devel libXrender-devel mesa-libGL-devel libICE-devel libSM-devel zlib-devel expat-devel"
+elif [ "${OS_ID_LIKE}" == "openAnolisos" ]; then
+	MANYLINUX_DEPS="glibc-devel libstdc++-devel glib2-devel libX11-devel libXext-devel libXrender-devel mesa-libGL-devel libICE-devel libSM-devel zlib-devel expat-devel"
 elif [ "${OS_ID_LIKE}" == "alpine" ]; then
 	MANYLINUX_DEPS="musl-dev libstdc++ glib-dev libx11-dev libxext-dev libxrender-dev mesa-dev libice-dev libsm-dev zlib-dev expat-dev"
 else
@@ -43,6 +45,38 @@ fi
 
 # RUNTIME_DEPS: Runtime dependencies. c.f. install-build-packages.sh
 if [ "${OS_ID_LIKE}" == "rhel" ]; then
+	RUNTIME_DEPS="zlib bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libcurl uuid libffi libdb"
+	if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
+		RUNTIME_DEPS="${RUNTIME_DEPS} libidn libXft"
+	elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+		RUNTIME_DEPS="${RUNTIME_DEPS} libidn tk"
+	else
+		RUNTIME_DEPS="${RUNTIME_DEPS} libidn2 tk"
+		# for graalpy
+		RUNTIME_DEPS="${RUNTIME_DEPS} libxcrypt-compat"
+	fi
+elif [ "${OS_ID_LIKE}" == "openAnolisos" ]; then
+	RUNTIME_DEPS="zlib bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libcurl uuid libffi libdb"
+	if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
+		RUNTIME_DEPS="${RUNTIME_DEPS} libidn libXft"
+	elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+		RUNTIME_DEPS="${RUNTIME_DEPS} libidn tk"
+	else
+		RUNTIME_DEPS="${RUNTIME_DEPS} libidn2 tk"
+		# for graalpy
+		RUNTIME_DEPS="${RUNTIME_DEPS} libxcrypt-compat"
+	fi
+elif [ "${OS_ID_LIKE}" == "openEuler" ]; then
+       RUNTIME_DEPS="zlib bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libcurl uuid libffi libdb"
+       if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
+               RUNTIME_DEPS="${RUNTIME_DEPS} libidn libXft"
+       elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+               RUNTIME_DEPS="${RUNTIME_DEPS} libidn tk"
+       else
+               RUNTIME_DEPS="${RUNTIME_DEPS} libidn2 tk"
+               # for graalpy
+       fi
+elif [ "${OS_ID_LIKE}" == "anolis" ]; then
 	RUNTIME_DEPS="zlib bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libcurl uuid libffi libdb"
 	if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
 		RUNTIME_DEPS="${RUNTIME_DEPS} libidn libXft"
@@ -109,6 +143,20 @@ elif [ "${OS_ID_LIKE}" == "rhel" ]; then
 	BASETOOLS="${BASETOOLS} glibc-locale-source glibc-langpack-en hardlink hostname libcurl libnsl libxcrypt which"
 	echo "tsflags=nodocs" >> /etc/dnf/dnf.conf
 	dnf -y upgrade
+	dnf -y install dnf-plugins-core 
+	if [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+		dnf config-manager --set-enabled powertools
+	else
+		dnf config-manager --set-enabled crb
+	fi
+	TOOLCHAIN_DEPS="gcc-toolset-14-binutils gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran"
+	if [ "${AUDITWHEEL_ARCH}" == "x86_64" ]; then
+		TOOLCHAIN_DEPS="${TOOLCHAIN_DEPS} yasm"
+	fi
+elif [ "${OS_ID_LIKE}" == "anolis" ]; then
+	BASETOOLS="${BASETOOLS} glibc-locale-source glibc-langpack-en hardlink hostname libcurl libnsl libxcrypt which"
+	echo "tsflags=nodocs" >> /etc/dnf/dnf.conf
+	dnf -y upgrade
 	dnf -y install dnf-plugins-core epel-release
 	if [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
 		dnf config-manager --set-enabled powertools
@@ -116,6 +164,30 @@ elif [ "${OS_ID_LIKE}" == "rhel" ]; then
 		dnf config-manager --set-enabled crb
 	fi
 	TOOLCHAIN_DEPS="gcc-toolset-14-binutils gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-gcc-gfortran"
+	if [ "${AUDITWHEEL_ARCH}" == "x86_64" ]; then
+		TOOLCHAIN_DEPS="${TOOLCHAIN_DEPS} yasm"
+	fi
+elif [ "${OS_ID_LIKE}" == "openEuler" ]; then
+	BASETOOLS="${BASETOOLS} glibc-locale-source glibc-langpack-en hardlink hostname libcurl libxcrypt which"
+	echo "tsflags=nodocs" >> /etc/dnf/dnf.conf
+	dnf -y upgrade
+	dnf -y install dnf-plugins-core
+	if [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+		dnf config-manager --set-enabled powertools
+	fi
+	TOOLCHAIN_DEPS="binutils gcc gcc-c++ gcc-gfortran"
+	if [ "${AUDITWHEEL_ARCH}" == "x86_64" ]; then
+		TOOLCHAIN_DEPS="${TOOLCHAIN_DEPS} yasm"
+	fi
+elif [ "${OS_ID_LIKE}" == "openAnolisos" ]; then
+	BASETOOLS="${BASETOOLS} glibc-locale-source glibc-langpack-en hardlink hostname libcurl libxcrypt which"
+	echo "tsflags=nodocs" >> /etc/dnf/dnf.conf
+	dnf -y upgrade
+	dnf -y install dnf-plugins-core
+#	if [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+#		dnf config-manager --set-enabled powertools
+#	fi
+	TOOLCHAIN_DEPS="binutils gcc gcc-c++ gcc-gfortran"
 	if [ "${AUDITWHEEL_ARCH}" == "x86_64" ]; then
 		TOOLCHAIN_DEPS="${TOOLCHAIN_DEPS} yasm"
 	fi
